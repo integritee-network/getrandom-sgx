@@ -150,8 +150,46 @@
 #![warn(rust_2018_idioms, unused_lifetimes, missing_docs)]
 #![cfg_attr(docsrs, feature(doc_cfg))]
 
+#![cfg_attr(all(target_env = "sgx", target_vendor = "mesalock"), feature(rustc_private))]
+#[cfg(all(feature = "mesalock_sgx", not(target_env = "sgx")))]
+#[macro_use]
+extern crate sgx_tstd as std;
+
+#[cfg(all(feature = "mesalock_sgx",target_env = "sgx"))]
+extern crate std;
+
 #[macro_use]
 extern crate cfg_if;
+
+cfg_if! {
+    if #[cfg(feature = "log")] {
+        #[allow(unused)]
+        #[macro_use]
+        extern crate log;
+    } else {
+        #[allow(unused)]
+        macro_rules! error {
+            ($($x:tt)*) => {};
+        }
+        #[allow(unused)]
+        macro_rules! warn {
+            ($($x:tt)*) => {};
+        }
+        #[allow(unused)]
+        macro_rules! info {
+            ($($x:tt)*) => {};
+        }
+    }
+}
+
+#[cfg(all(feature = "std", not(feature = "mesalock_sgx")))]
+extern crate std;
+
+#[cfg(all(feature = "std", feature = "mesalock_sgx", target_env = "sgx"))]
+extern crate sgx_trts;
+
+#[cfg(all(feature = "std", feature = "mesalock_sgx", target_env = "sgx"))]
+extern crate sgx_libc;
 
 mod error;
 mod util;
@@ -163,14 +201,52 @@ mod custom;
 mod error_impls;
 
 pub use crate::error::Error;
+#[cfg(target_os = "vxworks")]
+#[allow(dead_code)]
+mod util_libc;
+
+#[cfg(not(feature = "mesalock_sgx"))]
+cfg_if! {
+    // Unlike the other Unix, Fuchsia and iOS don't use the libc to make any calls.
+    if #[cfg(any(target_os = "android", target_os = "dragonfly", target_os = "emscripten",
+                 target_os = "freebsd", target_os = "haiku",     target_os = "illumos",
+                 target_os = "linux",   target_os = "macos",     target_os = "netbsd",
+                 target_os = "openbsd", target_os = "redox",     target_os = "solaris"))] {
+        #[allow(dead_code)]
+        mod util_libc;
+        // Keep std-only trait definitions for backwards compatibility
+        mod error_impls;
+    } else if #[cfg(feature = "std")] {
+        mod error_impls;
+    }
+}
+
+#[cfg(feature = "mesalock_sgx")]
+mod error_impls;
+
+// These targets read from a file as a fallback method.
+#[cfg(any(
+    target_os = "android",
+    all(target_os = "linux", not(feature = "mesalock_sgx")),
+    target_os = "macos",
+    target_os = "solaris",
+    target_os = "illumos",
+))]
+mod use_file;
 
 // System-specific implementations.
 //
 // These should all provide getrandom_inner with the same signature as getrandom.
 cfg_if! {
-    if #[cfg(any(target_os = "emscripten", target_os = "haiku",
-                 target_os = "redox"))] {
-        mod util_libc;
+    if #[cfg(feature = "mesalock_sgx")] {
+        #[path = "mesalock_sgx.rs"] mod imp;
+    } else if #[cfg(target_os = "android")] {
+        #[path = "linux_android.rs"] mod imp;
+    } else if #[cfg(target_os = "cloudabi")] {
+        #[path = "cloudabi.rs"] mod imp;
+    } else if #[cfg(target_os = "dragonfly")] {
+        #[path = "use_file.rs"] mod imp;
+    } else if #[cfg(target_os = "emscripten")] {
         #[path = "use_file.rs"] mod imp;
     } else if #[cfg(any(target_os = "android", target_os = "linux"))] {
         mod util_libc;

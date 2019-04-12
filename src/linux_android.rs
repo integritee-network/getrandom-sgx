@@ -7,11 +7,14 @@
 // except according to those terms.
 
 //! Implementation for Linux / Android
-use crate::{
-    util::LazyBool,
-    util_libc::{last_os_error, sys_fill_exact},
-    {use_file, Error},
-};
+#[cfg(not(feature = "mesalock_sgx"))]
+extern crate std;
+#[cfg(feature = "mesalock_sgx")]
+use std;
+
+use crate::util::LazyBool;
+use crate::util_libc::{last_os_error, sys_fill_exact};
+use crate::{use_file, Error};
 
 pub fn getrandom_inner(dest: &mut [u8]) -> Result<(), Error> {
     static HAS_GETRANDOM: LazyBool = LazyBool::new();
