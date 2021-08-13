@@ -197,8 +197,6 @@ mod util;
 // register_custom_getrandom macro, so old Custom RNG crates continue to build.
 #[cfg(feature = "custom")]
 mod custom;
-#[cfg(feature = "std")]
-mod error_impls;
 
 pub use crate::error::Error;
 #[cfg(target_os = "vxworks")]
