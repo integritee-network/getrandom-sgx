@@ -150,15 +150,7 @@
 #![warn(rust_2018_idioms, unused_lifetimes, missing_docs)]
 #![cfg_attr(docsrs, feature(doc_cfg))]
 
-#![cfg_attr(all(target_env = "sgx", target_vendor = "mesalock"), feature(rustc_private))]
-#[cfg(all(feature = "mesalock_sgx", not(target_env = "sgx")))]
-#[macro_use]
-extern crate sgx_tstd as std;
-
-#[cfg(all(feature = "mesalock_sgx",target_env = "sgx"))]
-extern crate std;
-
-#![cfg_attr(all(target_env = "sgx", target_vendor = "mesalock"), feature(rustc_private))]
+![cfg_attr(all(target_env = "sgx", target_vendor = "mesalock"), feature(rustc_private))]
 #[cfg(all(feature = "mesalock_sgx", not(target_env = "sgx")))]
 #[macro_use]
 extern crate sgx_tstd as std;
@@ -189,16 +181,6 @@ cfg_if! {
         }
     }
 }
-
-#[cfg(all(feature = "std", not(feature = "mesalock_sgx")))]
-extern crate std;
-
-#[cfg(all(feature = "std", feature = "mesalock_sgx", target_env = "sgx"))]
-extern crate sgx_trts;
-
-#[cfg(all(feature = "std", feature = "mesalock_sgx", target_env = "sgx"))]
-extern crate sgx_libc;
-
 mod error;
 pub use crate::error::Error;
 
@@ -209,14 +191,11 @@ extern crate sgx_trts;
 #[cfg(all(feature = "std", feature = "mesalock_sgx", target_env = "sgx"))]
 extern crate sgx_libc;
 
-mod error;
 mod util;
 // To prevent a breaking change when targets are added, we always export the
 // register_custom_getrandom macro, so old Custom RNG crates continue to build.
 #[cfg(feature = "custom")]
 mod custom;
-
-pub use crate::error::Error;
 #[cfg(target_os = "vxworks")]
 #[allow(dead_code)]
 mod util_libc;
