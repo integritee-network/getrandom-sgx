@@ -21,7 +21,7 @@ pub fn getrandom_inner(dest: &mut [u8]) -> Result<(), Error> {
 
     match rsgx_read_rand(dest) {
         Ok(()) => Ok(()),
-        Err(_) => Err(Error::UNAVAILABLE),
+        Err(_) => Err(Error::UNSUPPORTED),
     }
 }
 
