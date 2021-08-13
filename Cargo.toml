@@ -8,12 +8,12 @@ description = "A small cross-platform library for retrieving random data from sy
 documentation = "https://docs.rs/getrandom"
 repository = "https://github.com/rust-random/getrandom"
 categories = ["os", "no-std"]
-exclude = [".*"]
+exclude = ["utils/*", ".*", "appveyor.yml", "/sgx/*"]
+
 
 [dependencies]
 log = { git = "https://github.com/mesalock-linux/log-sgx", optional = true, default-features = false }
 cfg-if = "1"
-exclude = ["utils/*", ".*", "appveyor.yml", "/sgx/*"]
 
 [badges]
 travis-ci = { repository = "rust-random/getrandom" }
@@ -47,7 +47,7 @@ std = []
 # Feature to enable fallback RDRAND-based implementation on x86/x86_64
 rdrand = []
 # Feature to enable JavaScript bindings on wasm32-unknown-unknown
-js = ["wasm-bindgen", "js-sys"]
+#js = ["wasm-bindgen", "js-sys"]
 # Feature to enable custom RNG implementations
 custom = []
 # Unstable feature to support being a libstd dependency
@@ -57,10 +57,12 @@ custom = []
 #  "libc/rustc-dep-of-std",
 #  "wasi/rustc-dep-of-std",
 #]
+
 # Unstable/test-only feature to run wasm-bindgen tests in a browser
-#test-in-browser = []
+test-in-browser = []
+
+mesalock_sgx = ["sgx_tstd", "sgx_trts", "sgx_libc"]
 
 [package.metadata.docs.rs]
 features = ["std", "custom"]
 rustdoc-args = ["--cfg", "docsrs"]
-mesalock_sgx = ["sgx_tstd", "sgx_trts", "sgx_libc"]
