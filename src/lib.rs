@@ -181,15 +181,18 @@ cfg_if! {
         }
     }
 }
-mod error;
-pub use crate::error::Error;
 
+#[cfg(all(feature = "std", not(feature = "mesalock_sgx")))]
+extern crate std;
 
 #[cfg(all(feature = "std", feature = "mesalock_sgx", target_env = "sgx"))]
 extern crate sgx_trts;
 
 #[cfg(all(feature = "std", feature = "mesalock_sgx", target_env = "sgx"))]
 extern crate sgx_libc;
+
+mod error;
+pub use crate::error::Error;
 
 mod util;
 // To prevent a breaking change when targets are added, we always export the
