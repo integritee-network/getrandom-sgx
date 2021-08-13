@@ -158,6 +158,14 @@ extern crate sgx_tstd as std;
 #[cfg(all(feature = "mesalock_sgx",target_env = "sgx"))]
 extern crate std;
 
+#![cfg_attr(all(target_env = "sgx", target_vendor = "mesalock"), feature(rustc_private))]
+#[cfg(all(feature = "mesalock_sgx", not(target_env = "sgx")))]
+#[macro_use]
+extern crate sgx_tstd as std;
+
+#[cfg(all(feature = "mesalock_sgx",target_env = "sgx"))]
+extern crate std;
+
 #[macro_use]
 extern crate cfg_if;
 
@@ -184,6 +192,16 @@ cfg_if! {
 
 #[cfg(all(feature = "std", not(feature = "mesalock_sgx")))]
 extern crate std;
+
+#[cfg(all(feature = "std", feature = "mesalock_sgx", target_env = "sgx"))]
+extern crate sgx_trts;
+
+#[cfg(all(feature = "std", feature = "mesalock_sgx", target_env = "sgx"))]
+extern crate sgx_libc;
+
+mod error;
+pub use crate::error::Error;
+
 
 #[cfg(all(feature = "std", feature = "mesalock_sgx", target_env = "sgx"))]
 extern crate sgx_trts;
